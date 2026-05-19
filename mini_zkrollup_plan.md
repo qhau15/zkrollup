@@ -1,5 +1,67 @@
 # Đồ án: Mini zkRollup cho giao dịch token đơn giản
 
+## 0. Trạng thái triển khai hiện tại
+
+Project hiện đã được xây dựng trong thư mục:
+
+```text
+mini-zkrollup/
+```
+
+Trạng thái hiện tại:
+
+- Đã có Hardhat project chạy được.
+- Đã có circuit đơn giản `transfer.circom` để chứng minh một giao dịch transfer.
+- Đã generate Groth16 proof bằng snarkjs cho circuit transfer.
+- Đã sinh `TransferVerifier.sol` và verify proof transfer on-chain.
+- Đã có Merkle tree off-chain dùng Poseidon hash.
+- Đã có batch 2 giao dịch mẫu:
+
+```text
+Tx1: Account 0 -> Account 1: 10
+Tx2: Account 1 -> Account 2: 5
+```
+
+- Đã có circuit rollup thật `rollup_batch.circom` chứng minh:
+
+```text
+oldStateRoot đúng với trạng thái ban đầu
+batchHash đúng với danh sách giao dịch
+các giao dịch trong batch hợp lệ
+newStateRoot đúng với trạng thái sau batch
+```
+
+- Đã sinh `RollupVerifier.sol` từ snarkjs.
+- Đã có `RollupVerifierAdapter.sol` để `MiniRollup.sol` gọi verifier Groth16 thật.
+- Đã demo thành công flow:
+
+```text
+generate rollup proof -> verify proof on-chain -> update stateRoot
+```
+
+Lệnh kiểm tra chính đã chạy thành công:
+
+```bash
+npm.cmd test
+npm.cmd run generate:rollup-proof
+npm.cmd run demo:real-rollup
+```
+
+Kết quả demo thật:
+
+```text
+Groth16 proof verified on-chain.
+Updated state root: 1005544489707229708376093850579822181426666058645492732756413069991936706241
+```
+
+Các giới hạn còn giữ lại đúng phạm vi đồ án:
+
+- Chưa có chữ ký giao dịch.
+- Chưa có nonce chống replay ở từng transaction.
+- Chưa có bridge nạp/rút token thật.
+- Chưa có decentralized sequencer.
+- Data availability mới mô phỏng bằng file JSON và `batchHash`.
+
 ## 1. Mục tiêu đồ án
 
 Xây dựng một mô hình **Mini zkRollup** ở mức prototype để mô phỏng cách zkRollup xử lý giao dịch ngoài chuỗi chính, tạo bằng chứng zero-knowledge và xác minh bằng smart contract.
@@ -98,41 +160,70 @@ Quy ước kỹ thuật nên dùng trong prototype:
 
 ---
 
-## 5. Cấu trúc thư mục đề xuất
+## 5. Cấu trúc thư mục hiện tại
 
 ```text
 mini-zkrollup/
 │
 ├── circuits/
-│   └── transfer.circom
+│   ├── transfer.circom
+│   ├── rollup_batch.circom
+│   └── batch_with_roots.circom
 │
 ├── contracts/
-│   ├── Verifier.sol
-│   └── MiniRollup.sol
+│   ├── IRollupVerifier.sol
+│   ├── MiniRollup.sol
+│   ├── MockVerifier.sol
+│   ├── TransferVerifier.sol
+│   ├── RollupVerifier.sol
+│   └── RollupVerifierAdapter.sol
+│
+├── lib/
+│   ├── poseidon.js
+│   ├── merkle.js
+│   └── batch.js
 │
 ├── scripts/
-│   ├── compile-circuit.sh
+│   ├── compile-circuit.js
+│   ├── compile-rollup-circuit.js
+│   ├── setup-zk.js
+│   ├── setup-rollup-zk.js
 │   ├── generate-proof.js
+│   ├── generate-rollup-input.js
+│   ├── generate-rollup-proof.js
+│   ├── generate-batch.js
 │   ├── deploy.js
-│   └── submit-batch.js
+│   ├── submit-batch.js
+│   ├── verify-transfer-onchain.js
+│   ├── demo.js
+│   └── demo-real-rollup.js
 │
 ├── test/
-│   └── rollup.test.js
+│   └── mini-rollup.test.js
 │
 ├── input/
-│   └── input.json
+│   ├── input.json
+│   └── rollup_input.json
 │
 ├── output/
 │   ├── proof.json
-│   └── public.json
-│
-├── frontend/
-│   └── index.html
+│   ├── public.json
+│   ├── rollup_proof.json
+│   ├── rollup_public.json
+│   ├── verification_key.json
+│   └── rollup_verification_key.json
 │
 ├── package.json
 ├── hardhat.config.js
 └── README.md
 ```
+
+Ghi chú:
+
+- `TransferVerifier.sol` là verifier cho Version 1.
+- `RollupVerifier.sol` là verifier cho batch proof thật.
+- `MockVerifier.sol` chỉ dùng cho test nhanh logic `MiniRollup`.
+- `RollupVerifierAdapter.sol` chuyển proof dạng `bytes` sang chữ ký verifier do snarkjs sinh ra.
 
 ---
 
@@ -514,7 +605,20 @@ Mục tiêu:
 - Smart contract chỉ lưu root, không lưu toàn bộ balance.
 - Nếu proof hợp lệ, contract cập nhật root mới.
 
-Đây là version khuyến nghị nếu còn đủ thời gian.
+Trạng thái: **đã triển khai ở mức prototype cố định 4 account và batch 2 giao dịch**.
+
+File chính:
+
+- `circuits/rollup_batch.circom`
+- `contracts/RollupVerifier.sol`
+- `contracts/RollupVerifierAdapter.sol`
+- `scripts/demo-real-rollup.js`
+
+Thiết kế hiện tại không nhận Merkle path động cho từng account. Thay vào đó circuit nhận trạng thái 4 account ban đầu, tự tính `oldStateRoot`, xử lý batch tuần tự, tự tính `newStateRoot` và so sánh với public input. Cách này phù hợp với mini prototype vì đơn giản, chạy được end-to-end và vẫn chứng minh đúng ý tưởng:
+
+```text
+off-chain execution + batch transaction + ZK proof + on-chain verification + stateRoot update
+```
 
 ---
 
@@ -643,7 +747,48 @@ Lưu ý: Circom không viết trực tiếp `>=` đơn giản như ngôn ngữ l
 
 ### 10.1. Circuit version có Merkle root
 
-Nếu triển khai Version 3, circuit nên có cấu trúc gần như sau:
+Version 3 hiện được triển khai bằng file:
+
+```text
+circuits/rollup_batch.circom
+```
+
+Circuit cố định:
+
+```text
+ACCOUNT_COUNT = 4
+BATCH_SIZE = 2
+BALANCE_BITS = 32
+```
+
+Public input:
+
+```text
+oldStateRoot
+newStateRoot
+batchHash
+```
+
+Private input:
+
+```text
+oldBalances[4]
+from[2]
+to[2]
+amount[2]
+```
+
+Circuit tự tính:
+
+```text
+oldStateRoot = MerkleRoot4(oldBalances)
+tx0 hợp lệ
+tx1 hợp lệ sau trạng thái tx0
+newStateRoot = MerkleRoot4(finalBalances)
+batchHash = Poseidon(tx0Hash, tx1Hash)
+```
+
+Phiên bản tổng quát hơn có Merkle path động có thể phát triển theo cấu trúc sau:
 
 ```text
 Public input:
@@ -1401,36 +1546,54 @@ npm install snarkjs circomlib ethers
 npx hardhat init
 ```
 
-### Compile circuit
+Trong project hiện tại, dùng `npm.cmd` trên Windows để tránh lỗi PowerShell chặn `npm.ps1`.
+
+### Chạy test contract
 
 ```bash
-bash scripts/compile-circuit.sh
+npm.cmd test
 ```
 
-Nếu dùng Windows, có thể chạy bằng Git Bash/WSL. Một lựa chọn khác là đổi script compile sang Node.js để tránh phụ thuộc Bash.
-
-### Generate proof
+### Demo nhanh bằng mock verifier
 
 ```bash
-node scripts/generate-proof.js
+npm.cmd run demo
 ```
 
-### Deploy contract
+### Version 1: transfer proof
 
 ```bash
-npx hardhat run scripts/deploy.js --network localhost
+npm.cmd run compile:circuit
+npm.cmd run setup:zk
+npm.cmd run generate:proof
+npm.cmd run verify:transfer:onchain
 ```
 
-### Submit batch
+### Version 3: rollup batch proof thật
 
 ```bash
-node scripts/submit-batch.js
+npm.cmd run generate:rollup-input
+npm.cmd run compile:rollup-circuit
+npm.cmd run setup:rollup-zk
+npm.cmd run generate:rollup-proof
+npm.cmd run demo:real-rollup
 ```
 
-### Chạy test
+### Deploy/submit trên local node riêng
+
+Nếu muốn chạy deploy rồi submit trên cùng một local chain:
+
+Terminal 1:
 
 ```bash
-npx hardhat test
+npx.cmd hardhat node
+```
+
+Terminal 2:
+
+```bash
+npm.cmd run deploy -- --network localhost
+npm.cmd run submit:batch -- --network localhost
 ```
 
 ---
@@ -1439,20 +1602,22 @@ npx hardhat test
 
 Đồ án được xem là hoàn thành nếu có đủ các phần sau:
 
-- [ ] Giải thích được zkRollup là gì.
-- [ ] Có kiến trúc hệ thống rõ ràng.
-- [ ] Có circuit kiểm tra giao dịch.
-- [ ] Circuit có range constraint cho `amount`, `balance`, `accountId`.
-- [ ] Nếu làm Version 3, circuit kiểm tra Merkle path và liên kết `oldStateRoot` với `newStateRoot`.
-- [ ] Có proof được generate thành công.
-- [ ] Có smart contract verify proof.
-- [ ] Có stateRoot được cập nhật.
-- [ ] Có test case đúng và sai.
-- [ ] Có test public input sai, Merkle proof sai và replay batch cũ.
-- [ ] Có giải thích rõ giới hạn về signature, nonce và data availability.
-- [ ] Có báo cáo.
-- [ ] Có slide.
-- [ ] Có demo chạy được.
+- [x] Giải thích được zkRollup là gì.
+- [x] Có kiến trúc hệ thống rõ ràng.
+- [x] Có circuit kiểm tra giao dịch.
+- [x] Circuit có range constraint cho `amount`, `balance`, `accountId` ở mức prototype.
+- [x] Có circuit rollup batch liên kết `oldStateRoot`, `newStateRoot` và `batchHash`.
+- [x] Có proof được generate thành công.
+- [x] Có smart contract verify proof.
+- [x] Có stateRoot được cập nhật.
+- [x] Có test case đúng và sai cho `MiniRollup`.
+- [x] Có test replay batch cũ.
+- [x] Có giải thích rõ giới hạn về signature, nonce và data availability.
+- [x] Bổ sung test tự động cho verifier Groth16 thật.
+- [x] Bổ sung test public input sai cho proof rollup thật.
+- [ ] Viết báo cáo hoàn chỉnh.
+- [ ] Tạo slide.
+- [x] Có demo chạy được.
 
 ---
 

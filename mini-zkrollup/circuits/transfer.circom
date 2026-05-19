@@ -45,4 +45,4 @@ template Main(BALANCE_BITS) {
     transfer.newToBalance <== newToBalance;
 }
 
-component main = Main(32);
+component main { public [oldFromBalance, oldToBalance, amount, newFromBalance, newToBalance] } = Main(32);

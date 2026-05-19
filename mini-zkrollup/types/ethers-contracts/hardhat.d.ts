@@ -10,21 +10,37 @@ import * as Contracts from "./index.js";
 
 declare module "@nomicfoundation/hardhat-ethers/types" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
-  getContractFactory(name: 'MockVerifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.MockVerifier__factory>
+  getContractFactory(name: 'IRollupVerifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IRollupVerifier__factory>
 getContractFactory(name: 'MiniRollup', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.MiniRollup__factory>
-getContractFactory(name: 'IRollupVerifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IRollupVerifier__factory>
+getContractFactory(name: 'MockVerifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.MockVerifier__factory>
+getContractFactory(name: 'RollupGroth16Verifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.RollupGroth16Verifier__factory>
+getContractFactory(name: 'IRollupGroth16Verifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IRollupGroth16Verifier__factory>
+getContractFactory(name: 'RollupVerifierAdapter', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.RollupVerifierAdapter__factory>
+getContractFactory(name: 'Groth16Verifier', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.Groth16Verifier__factory>
 
-  getContractAt(name: 'MockVerifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.MockVerifier>
+  getContractAt(name: 'IRollupVerifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IRollupVerifier>
 getContractAt(name: 'MiniRollup', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.MiniRollup>
-getContractAt(name: 'IRollupVerifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IRollupVerifier>
+getContractAt(name: 'MockVerifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.MockVerifier>
+getContractAt(name: 'RollupGroth16Verifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.RollupGroth16Verifier>
+getContractAt(name: 'IRollupGroth16Verifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IRollupGroth16Verifier>
+getContractAt(name: 'RollupVerifierAdapter', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.RollupVerifierAdapter>
+getContractAt(name: 'Groth16Verifier', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.Groth16Verifier>
 
-  deployContract(name: 'MockVerifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MockVerifier>
+  deployContract(name: 'IRollupVerifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRollupVerifier>
 deployContract(name: 'MiniRollup', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MiniRollup>
-deployContract(name: 'IRollupVerifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRollupVerifier>
+deployContract(name: 'MockVerifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MockVerifier>
+deployContract(name: 'RollupGroth16Verifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RollupGroth16Verifier>
+deployContract(name: 'IRollupGroth16Verifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRollupGroth16Verifier>
+deployContract(name: 'RollupVerifierAdapter', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RollupVerifierAdapter>
+deployContract(name: 'Groth16Verifier', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Groth16Verifier>
 
-  deployContract(name: 'MockVerifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MockVerifier>
+  deployContract(name: 'IRollupVerifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRollupVerifier>
 deployContract(name: 'MiniRollup', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MiniRollup>
-deployContract(name: 'IRollupVerifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRollupVerifier>
+deployContract(name: 'MockVerifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.MockVerifier>
+deployContract(name: 'RollupGroth16Verifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RollupGroth16Verifier>
+deployContract(name: 'IRollupGroth16Verifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRollupGroth16Verifier>
+deployContract(name: 'RollupVerifierAdapter', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.RollupVerifierAdapter>
+deployContract(name: 'Groth16Verifier', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Groth16Verifier>
 
     // default types
     getContractFactory(
