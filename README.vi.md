@@ -2,6 +2,12 @@
 
 Dự án này là một prototype mini cho zkRollup, mô tả luồng dùng zk-SNARKs để chứng minh batch giao dịch token và verify proof on-chain.
 
+Ngôn ngữ:
+- English: `README.en.md`
+- Tiếng Việt: `README.vi.md`
+
+README gốc này đang để mặc định tiếng Anh ở `README.md`; bản này là tiếng Việt.
+
 ## Tổng quan
 
 Repo gồm hai phần chính:
@@ -82,6 +88,4 @@ sequenceDiagram
   MR-->>HH: success (update stateRoot) / revert
 ```
 
----
-
-Phần “cần học gì” được đặt trong `mini-zkrollup/README.md`.
+Phần “cần học gì” nằm trong `mini-zkrollup/README.vi.md`.
